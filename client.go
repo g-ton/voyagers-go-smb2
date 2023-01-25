@@ -476,7 +476,7 @@ func (fs *Share) remove(name string) error {
 	return nil
 }
 
-func (fs *Share) Rename(oldpath, newpath string) error {
+func (fs *Share) Rename(oldpath, newpath string, overwrite bool) error {
 	oldpath = normPath(oldpath)
 	newpath = normPath(newpath)
 
@@ -505,11 +505,19 @@ func (fs *Share) Rename(oldpath, newpath string) error {
 		return &os.LinkError{Op: "rename", Old: oldpath, New: newpath, Err: err}
 	}
 
+	var overwriteFlag uint8
+
+	if overwrite {
+		overwriteFlag = 1
+	} else {
+		overwriteFlag = 0
+	}
+
 	info := &SetInfoRequest{
 		FileInfoClass:         FileRenameInformation,
 		AdditionalInformation: 0,
 		Input: &FileRenameInformationType2Encoder{
-			ReplaceIfExists: 0,
+			ReplaceIfExists: overwriteFlag,
 			RootDirectory:   0,
 			FileName:        newpath,
 		},
